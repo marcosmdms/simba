@@ -1,30 +1,62 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>S.I.M.B.A</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: Arial, sans-serif;
+      background: #111;
+    }
+    .card {
+      width: min(420px, 90vw);
+      padding: 32px;
+      border-radius: 16px;
+      background: white;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(0,0,0,.35);
+    }
+    h1 { margin-top: 0; }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: 0;
+      border-radius: 8px;
+      background: #111;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover { opacity: .85; }
+    #status { margin-top: 16px; color: #555; min-height: 20px; }
+  </style>
 </head>
-
 <body>
+  <main class="card">
+    <h1>S.I.M.B.A</h1>
+    <p>Preview do seu projeto</p>
+    <button onclick="run()">Iniciar</button>
+    <div id="status">Clique em iniciar para executar.</div>
+  </main>
 
   <script>
     let repeat = true;
     let balance = 0;
-
     const statement = [];
 
     const utility = {
       cancel: function () {
         const response = confirm("Deseja realmente cancelar?");
-
         if (!response) return response;
-
         alert("Operação cancelada.");
         return response;
       },
-
       parse: function (value) {
         if (value === "") {
           alert("Informe um valor.");
@@ -33,55 +65,41 @@
           alert("Digite um valor válido.");
           return false;
         }
-
         return true;
       },
     };
 
     const operations = {
       check: function () {
-        alert("Saldo atual: R$ " + balance);
+        alert("Saldo atual: R$ " + balance.toFixed(2));
       },
-
       deposit: function () {
         const amount = prompt("Digite o valor do depósito:");
-
         if (amount === null) {
           const response = utility.cancel();
-
           if (!response) return operations.deposit();
-
           return;
         }
-
         const parsed = utility.parse(amount);
-
         if (!parsed) return operations.deposit();
 
         balance += +amount;
-
         operations.check();
 
-        statement[statement.length] = {
+        statement.push({
           operation: "Depósito",
           amount: +amount,
-          balance: balance,
-        };
+          balance,
+        });
       },
-
       cashout: function () {
         const amount = prompt("Digite o valor do saque:");
-
         if (amount === null) {
           const response = utility.cancel();
-
           if (!response) return operations.cashout();
-
           return;
         }
-
         const parsed = utility.parse(amount);
-
         if (!parsed) return operations.cashout();
 
         if (+amount > balance) {
@@ -90,61 +108,51 @@
         }
 
         balance -= +amount;
-
         operations.check();
 
-        statement[statement.length] = {
+        statement.push({
           operation: "Saque",
           amount: +amount,
-          balance: balance,
-        };
+          balance,
+        });
       },
-
       statement: function () {
         let message = "Extrato\n\n";
 
         if (statement.length === 0) {
-          message += "Nenhuma operação realizada.";
-          alert(message);
+          alert(message + "Nenhuma operação realizada.");
           return;
         }
 
         for (let i = 0; i < statement.length; i++) {
           message +=
             statement[i].operation +
-            ": R$ " +
-            statement[i].amount +
-            " | saldo: R$ " +
-            statement[i].balance +
-            "\n";
+            ": R$ " + statement[i].amount.toFixed(2) +
+            " | saldo: R$ " + statement[i].balance.toFixed(2) + "\n";
         }
-
         alert(message);
       },
-
       exit: function () {
         alert("Foi um prazer atendê-lo.");
         repeat = false;
       },
-
       invalid: function () {
         alert("Operação inválida.");
       },
     };
 
     function run() {
+      repeat = true;
+
       const username = prompt("Digite seu nome:");
 
       if (username === null) {
         const response = utility.cancel();
-
-        if (response === false) run();
-
+        if (response === false) return run();
         return;
       }
 
       const parseName = username || "usuário";
-
       alert("Olá, " + parseName + "! Bem vindo ao Simba.");
 
       while (repeat) {
@@ -159,45 +167,26 @@
 
         if (operation === null) {
           const response = utility.cancel();
-
           if (!response) continue;
-
           return;
         }
 
         const parsed = utility.parse(operation);
-
         if (!parsed) continue;
 
         switch (+operation) {
-          case 1:
-            operations.check();
-            break;
-
-          case 2:
-            operations.deposit();
-            break;
-
-          case 3:
-            operations.cashout();
-            break;
-
-          case 4:
-            operations.statement();
-            break;
-
-          case 5:
-            operations.exit();
-            break;
-
-          default:
-            operations.invalid();
+          case 1: operations.check(); break;
+          case 2: operations.deposit(); break;
+          case 3: operations.cashout(); break;
+          case 4: operations.statement(); break;
+          case 5: operations.exit(); break;
+          default: operations.invalid();
         }
       }
+
+      document.getElementById("status").textContent =
+        "Sessão encerrada. Saldo final: R$ " + balance.toFixed(2);
     }
-
-    run();
   </script>
-
 </body>
 </html>
